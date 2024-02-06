@@ -1,0 +1,15 @@
+{
+  "name": "hanap-d-puntud",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.0.12"
+  },
+  "dependencies": {
+    "ol": "latest"
+  }
+}
