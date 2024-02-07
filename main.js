@@ -5,6 +5,8 @@ import { OSM, Vector as VectorSource } from 'ol/source.js';
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer.js';
 import { get, transform } from 'ol/proj.js';
 
+const marks = JSON.parse(localStorage.getItem('marks'));
+
 const raster = new TileLayer({
 	source: new OSM(),
 });
@@ -45,7 +47,32 @@ function addInteractions() {
 	map.addInteraction(draw);
 	snap = new Snap({ source: source });
 	map.addInteraction(snap);
-	console.log(snap.vector);
 }
 
 addInteractions();
+
+draw.on('drawend', function (evt) {
+	let coordinates = evt.feature.getGeometry().getCoordinates()[0];
+	marks.push(coordinates);
+	localStorage.setItem('marks', JSON.stringify(marks));
+});
+
+DrawMarks(marks);
+
+console.log(marks);
+
+function DrawMarks(marks) {
+	marks.forEach(mark => {
+		var feature = new ol.Feature({
+			geometry: new ol.geom.Polygon([mark]),
+		});
+		feature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
+		var vectorSource = new ol.source.Vector({
+			features: [feature],
+		});
+		var vectorLayer = new ol.layer.Vector({
+			source: vectorSource,
+		});
+		map.addLayer(vectorLayer);
+	});
+}
