@@ -1,78 +1,42 @@
-import Map from 'ol/Map.js';
-import View from 'ol/View.js';
-import { Draw, Modify, Snap } from 'ol/interaction.js';
-import { OSM, Vector as VectorSource } from 'ol/source.js';
-import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer.js';
-import { get, transform } from 'ol/proj.js';
+let isAdding = true;
 
-const marks = JSON.parse(localStorage.getItem('marks'));
+let locations = [];
 
-const raster = new TileLayer({
-	source: new OSM(),
-});
+let map;
 
-const source = new VectorSource();
-const vector = new VectorLayer({
-	source: source,
-	style: {
-		'fill-color': 'rgba(255, 255, 255, 0.2)',
-		'stroke-color': '#ffcc33',
-		'stroke-width': 2,
-		'circle-radius': 7,
-		'circle-fill-color': '#ffcc33',
-	},
-});
-
-const map = new Map({
-	layers: [raster, vector],
-	target: 'map',
-	view: new View({
-		center: transform([122.586795, 7.782065], 'EPSG:4326', 'EPSG:3857'),
-		zoom: 11,
-		minZoom: 11,
+function GetMap() {
+	map = new Microsoft.Maps.Map('#map', {
+		credentials: 'Av5AefOeIqwi0bkOehI7bdTzeD5kLNaU7BDoAaCnPkW0aOgWZFR-UOvgkuKUJ-GW',
+		center: new Microsoft.Maps.Location(7.782065, 122.586795),
+		mapTypeId: Microsoft.Maps.MapTypeId.aerial,
+		labelOverlay: Microsoft.Maps.LabelOverlay.hidden,
+		zoom: 15,
+		minZoom: 15,
 		maxZoom: 20,
-	}),
-});
-
-const modify = new Modify({ source: source });
-map.addInteraction(modify);
-
-let draw, snap; // global so we can remove them later
-
-function addInteractions() {
-	draw = new Draw({
-		source: source,
-		type: 'Polygon',
+		disableStreetside: true,
+		allowHidingLabelsOfRoad: true,
+		// enableHighDpi: true,
+		willReadFrequently: true,
+		showDashboard: false,
+		showCopyright: false,
+		showScalebar: false,
 	});
-	map.addInteraction(draw);
-	snap = new Snap({ source: source });
-	map.addInteraction(snap);
+
+	if (isAdding) {
+		var polygon = new Microsoft.Maps.Polygon(locations, {
+			fillColor: 'rgba(255, 255, 0, 0.1)',
+			strokeColor: '#40A2E3',
+			strokeThickness: 3,
+		});
+		Microsoft.Maps.Events.addHandler(map, 'click', function (e) {
+			locations.push(e.location);
+			polygon.setRings(locations);
+			map.entities.push(polygon);
+		});
+		Microsoft.Maps.Events.addHandler(map, 'rightclick', function (e) {
+			console.log(e);
+		});
+	}
 }
 
-addInteractions();
-
-draw.on('drawend', function (evt) {
-	let coordinates = evt.feature.getGeometry().getCoordinates()[0];
-	marks.push(coordinates);
-	localStorage.setItem('marks', JSON.stringify(marks));
-});
-
-DrawMarks(marks);
-
-console.log(marks);
-
-function DrawMarks(marks) {
-	marks.forEach(mark => {
-		var feature = new ol.Feature({
-			geometry: new ol.geom.Polygon([mark]),
-		});
-		feature.getGeometry().transform('EPSG:4326', 'EPSG:3857');
-		var vectorSource = new ol.source.Vector({
-			features: [feature],
-		});
-		var vectorLayer = new ol.layer.Vector({
-			source: vectorSource,
-		});
-		map.addLayer(vectorLayer);
-	});
-}
+console.log(map);
