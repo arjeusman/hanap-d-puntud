@@ -1,20 +1,28 @@
-@import 'node_modules/ol/ol.css';
+@import "node_modules/ol/ol.css";
 
 html,
 body {
-	top: 0px;
-	left: 0px;
-	right: 0px;
-	bottom: 0px;
-	margin: 0;
-	height: 100vh;
-	position: fixed;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  margin: 0;
+  height: 100vh;
+  position: fixed;
 }
 
 #map {
-	position: fixed;
-	top: 0;
-	bottom: 0;
-	width: 100vw;
-	height: 100vh;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+#add {
+  top: 20px;
+  left: 20px;
+  z-index: 1;
+  position: fixed;
+  padding: 5px 20px;
 }

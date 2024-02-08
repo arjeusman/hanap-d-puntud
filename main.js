@@ -1,42 +1,80 @@
-let isAdding = true;
+import styles from "./styles.json";
 
-let locations = [];
+let isAdding = false;
 
-let map;
+let data = JSON.parse(localStorage.getItem("data"));
 
-function GetMap() {
-	map = new Microsoft.Maps.Map('#map', {
-		credentials: 'Av5AefOeIqwi0bkOehI7bdTzeD5kLNaU7BDoAaCnPkW0aOgWZFR-UOvgkuKUJ-GW',
-		center: new Microsoft.Maps.Location(7.782065, 122.586795),
-		mapTypeId: Microsoft.Maps.MapTypeId.aerial,
-		labelOverlay: Microsoft.Maps.LabelOverlay.hidden,
-		zoom: 15,
-		minZoom: 15,
-		maxZoom: 20,
-		disableStreetside: true,
-		allowHidingLabelsOfRoad: true,
-		// enableHighDpi: true,
-		willReadFrequently: true,
-		showDashboard: false,
-		showCopyright: false,
-		showScalebar: false,
-	});
+function getMap() {
+  const map = new Microsoft.Maps.Map("#map", {
+    credentials:
+      "Av5AefOeIqwi0bkOehI7bdTzeD5kLNaU7BDoAaCnPkW0aOgWZFR-UOvgkuKUJ-GW",
+    center: new Microsoft.Maps.Location(7.782065, 122.586795),
+    mapTypeId: Microsoft.Maps.MapTypeId.aerial,
+    labelOverlay: Microsoft.Maps.LabelOverlay.hidden,
+    zoom: 16,
+    minZoom: 15,
+    maxZoom: 20,
+    disableStreetside: true,
+    allowHidingLabelsOfRoad: true,
+    enableHighDpi: true,
+    willReadFrequently: true,
+    showDashboard: false,
+    showCopyright: false,
+    showScalebar: false,
+  });
 
-	if (isAdding) {
-		var polygon = new Microsoft.Maps.Polygon(locations, {
-			fillColor: 'rgba(255, 255, 0, 0.1)',
-			strokeColor: '#40A2E3',
-			strokeThickness: 3,
-		});
-		Microsoft.Maps.Events.addHandler(map, 'click', function (e) {
-			locations.push(e.location);
-			polygon.setRings(locations);
-			map.entities.push(polygon);
-		});
-		Microsoft.Maps.Events.addHandler(map, 'rightclick', function (e) {
-			console.log(e);
-		});
-	}
+  // var polygon1 = new Microsoft.Maps.Polygon(data, styles.default);
+
+  // Microsoft.Maps.Events.addHandler(polygon1, "mouseover", function (e) {
+  //   e.target.setOptions(styles.hover);
+  // });
+
+  // Microsoft.Maps.Events.addHandler(polygon1, "mouseout", function (e) {
+  //   e.target.setOptions(styles.default);
+  // });
+
+  // map.entities.push(polygon1);
+
+  let locations = [];
+  let isClicked = false;
+  var polygon;
+  Microsoft.Maps.Events.addHandler(map, "click", function (e) {
+    if (isAdding) {
+      locations.push(e.location);
+      if (!isClicked) {
+        isClicked = true;
+        polygon = new Microsoft.Maps.Polygon(locations, styles.new);
+        map.entities.push(polygon);
+        Microsoft.Maps.Events.addHandler(polygon, "dblclick", function (e) {
+          console.log(e.target);
+          e.target.setOptions(styles.hover);
+        });
+      }
+    }
+  });
+  Microsoft.Maps.Events.addHandler(map, "mousemove", function (e) {
+    if (isAdding) {
+      if (locations.length > 0) {
+        locations.push(e.location);
+        polygon.setRings(locations);
+        locations.pop();
+      }
+    }
+  });
+  Microsoft.Maps.Events.addHandler(map, "rightclick", function (e) {
+    polygon.setRings(locations);
+    isAdding = false;
+  });
 }
 
-console.log(map);
+document.getElementById("add").addEventListener("click", (e) => {
+  if (isAdding) {
+    isAdding = false;
+    e.target.innerHTML = "Add";
+  } else {
+    isAdding = true;
+    e.target.innerHTML = "Edit";
+  }
+});
+
+window.onload = getMap;

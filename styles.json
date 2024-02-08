@@ -1,0 +1,17 @@
+{
+  "default": {
+    "fillColor": "rgba(200, 0, 0, 0.4)",
+    "strokeColor": "#FF6868",
+    "strokeThickness": 3
+  },
+  "hover": {
+    "fillColor": "rgba(0, 200, 0, 0.4)",
+    "strokeColor": "#74E291",
+    "strokeThickness": 3
+  },
+  "new": {
+    "fillColor": "rgba(0, 0, 255, 0.2)",
+    "strokeColor": "#40A2E3",
+    "strokeThickness": 3
+  }
+}
