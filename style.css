@@ -1,4 +1,9 @@
-@import "node_modules/ol/ol.css";
+@import "light.css";
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
+
+*::-webkit-scrollbar {
+  display: none;
+}
 
 html,
 body {
@@ -25,4 +30,10 @@ body {
   z-index: 1;
   position: fixed;
   padding: 5px 20px;
+}
+
+.btn:focus,
+.form-control:focus {
+  box-shadow: none !important;
+  outline: none !important;
 }
