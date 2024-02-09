@@ -1,17 +1,27 @@
 {
   "default": {
-    "fillColor": "rgba(200, 0, 0, 0.4)",
-    "strokeColor": "#FF6868",
-    "strokeThickness": 3
+    "fillColor": "rgba(200, 0, 0, 0.1)",
+    "strokeColor": "#FC6736",
+    "strokeThickness": 2
   },
   "hover": {
-    "fillColor": "rgba(0, 200, 0, 0.4)",
+    "fillColor": "rgba(0, 200, 0, 0.1)",
     "strokeColor": "#74E291",
-    "strokeThickness": 3
+    "strokeThickness": 2
+  },
+  "active": {
+    "fillColor": "transparent",
+    "strokeColor": "#FFA447",
+    "strokeThickness": 2
   },
   "new": {
+    "fillColor": "rgba(0, 0, 255, 0.1)",
+    "strokeColor": "#40A2E3",
+    "strokeThickness": 2
+  },
+  "unsave": {
     "fillColor": "rgba(0, 0, 255, 0.2)",
     "strokeColor": "#40A2E3",
-    "strokeThickness": 3
+    "strokeThickness": 2
   }
 }

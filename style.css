@@ -1,6 +1,30 @@
 @import "light.css";
 @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
 
+@font-face {
+  font-family: "Samsung Sharp Sans Regular";
+  font-style: normal;
+  font-weight: normal;
+  src: local("Samsung Sharp Sans Regular"),
+    url("./fonts/samsungsharpsans.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Samsung Sharp Sans Medium";
+  font-style: normal;
+  font-weight: normal;
+  src: local("Samsung Sharp Sans Medium"),
+    url("./fonts/samsungsharpsans-medium.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Samsung Sharp Sans Bold";
+  font-style: normal;
+  font-weight: normal;
+  src: local("Samsung Sharp Sans Bold"),
+    url("./fonts/samsungsharpsans-bold.woff") format("woff");
+}
+
 *::-webkit-scrollbar {
   display: none;
 }
@@ -14,6 +38,13 @@ body {
   margin: 0;
   height: 100vh;
   position: fixed;
+  user-select: none;
+  font-family: "Samsung Sharp Sans Medium";
+}
+
+.fw-bold,
+.fw-bolder {
+  font-family: "Samsung Sharp Sans Bold";
 }
 
 #map {
@@ -37,3 +68,62 @@ body {
   box-shadow: none !important;
   outline: none !important;
 }
+
+form {
+  font-size: 13px;
+}
+
+.panel {
+  z-index: 999;
+  top: 0px;
+  right: 0px;
+  position: fixed;
+  height: 100vh;
+  transition: all linear .3s;
+  background-color: rgba(255, 255, 255, 0.8);
+  overflow-x: hidden;
+  display: flex;
+  flex-flow: column;
+  flex-wrap: nowrap;
+  grid-gap: 2px;
+  width: 0vw;
+  font-size: 13px;
+  padding: 0px;
+  white-space: nowrap;
+}
+
+.panel > .card {
+  margin: 0px;
+  display: block;
+}
+
+.panel p {
+  width: 100%;
+  max-width: 100%;
+  /* white-space: wrap; */
+  overflow-x: hidden;
+}
+
+.panel.show {
+  width: 25vw;
+}
+
+.panel.hide {
+  width: 0vw;
+}
+
+/* @keyframes show {
+  from {
+    width: 0px;
+  } to {
+    width: 350px;
+  }
+}
+
+@keyframes hide {
+  from {
+    width: 350px;
+  } to {
+    width: 0px;
+  }
+} */

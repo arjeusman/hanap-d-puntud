@@ -6,10 +6,10 @@ try {
     //results
     $result['type'] = 'success';
     $result['message'] = 'Record was loaded successfully.';
-    $result['records'] = array();
+    $result['data'] = array();
     $data = mysqli_query($con, "select * from cementery order by id desc");
     while($d = mysqli_fetch_assoc($data)):
-        array_push($result['records'], $d);
+        array_push($result['data'], $d);
     endwhile;
     http_response_code(200);
 } catch(Exception  $e){

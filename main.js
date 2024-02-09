@@ -1,31 +1,92 @@
 import axios from "axios";
 import styles from "./styles.json";
 
-let isAdding = false;
-
-let data = JSON.parse(localStorage.getItem("data"));
-
 let locations = [];
+let isAdding = false;
 let isClicked = false;
+
 let polygon;
+let infobox;
 
 let map;
+const server = "http://localhost/hanap-d-puntod/server";
+let panel = document.getElementById('panel')
 
-function loadCementery(data, map) {
+function showPanel(data) {
+  panel.classList.remove('hide')
+  panel.classList.add('show')
+  let template = `
+    <div class="card rounded-0 shadow-lg">
+      <div class="card-header">
+        <h1 class="card-title fs-4 fw-bolder m-0 text-black">${(data.name) ? data.name : 'Unnamed'}</h1>
+        <small class="d-block border-bottom py-2 text-dark"><i class='bi-geo-alt-fill'></i> ${(data.address) ? data.address : 'No address avialable.'}</small>
+      </div>
+      <div class="card-body">
+        <p>${(data.description) ? data.description : 'No description available.'}</p>
+      </div>
+    </div>
+  `;
+  panel.innerHTML = template
+}
+
+function hidePanel() {
+  panel.classList.remove('show')
+  panel.classList.add('hide')
+}
+
+function loadCementery(map) {
   map.entities.clear();
-  data.forEach((c) => {
-    let polygon = new Microsoft.Maps.Polygon(
-      JSON.parse(c.trace),
-      styles.default
-    );
-    Microsoft.Maps.Events.addHandler(polygon, "mouseover", function (e) {
-      e.target.setOptions(styles.hover);
+  axios
+    .get(`${server}/index.php`)
+    .then((response) => {
+      response.data.records.forEach((c) => {
+        let polygon = new Microsoft.Maps.Polygon(
+          JSON.parse(c.trace),
+          styles.default
+        );
+        Microsoft.Maps.Events.addHandler(polygon, "click", function (e) {
+          showPanel(c)
+          e.target.setOptions(styles.active);
+          Microsoft.Maps.loadModule("Microsoft.Maps.SpatialMath", function () {
+            map.setView({
+              zoom: 17,
+              center: Microsoft.Maps.SpatialMath.Geometry.centroid(e.target)
+            })
+          });
+        });
+        Microsoft.Maps.Events.addHandler(polygon, "dblclick", function (e) {
+          getEditForm(c);
+        });
+        Microsoft.Maps.Events.addHandler(polygon, "mouseover", function (e) {
+          e.target.setOptions(styles.hover);
+          Microsoft.Maps.loadModule("Microsoft.Maps.SpatialMath", function () {
+            (c.name && c.address) && infobox.setOptions({
+              description: `
+                <div style="min-width: 300px">
+                  ${c.address && `<h1 class='fs-5 fw-bolder m-0 text-dark'>${c.name}</h1>`}
+                  ${c.address && `
+                    <span class='d-block text-truncate py-1 border-bottom'>
+                      <i class='bi-geo-alt-fill'></i> ${c.address}
+                    </span>`}
+                  <span class='d-block'>${((c.description) ? c.description : 'No description available.')}</span>
+                </div>`,
+              location: Microsoft.Maps.SpatialMath.Geometry.centroid(e.target),
+              visible: true
+            });
+          });
+        });
+        Microsoft.Maps.Events.addHandler(polygon, "mouseout", function (e) {
+          e.target.setOptions(styles.default);
+          infobox.setOptions({
+            visible: false,
+          });
+        });
+        map.entities.push(polygon);
+      });
+    })
+    .catch((error) => {
+      console.log(error);
     });
-    Microsoft.Maps.Events.addHandler(polygon, "mouseout", function (e) {
-      e.target.setOptions(styles.default);
-    });
-    map.entities.push(polygon);
-  });
 }
 
 function getMap() {
@@ -46,6 +107,16 @@ function getMap() {
     showCopyright: false,
     showScalebar: false,
   });
+
+  infobox = new Microsoft.Maps.Infobox(map.getCenter(), { visible: false });
+  infobox.setOptions({
+    maxHeight: 400,
+    maxWidth: 400,
+    showCloseButton: false,
+  });
+  infobox.setMap(map);
+
+  loadCementery(map);
 
   document.addEventListener("keydown", (e) => {
     if (
@@ -71,6 +142,7 @@ function getMap() {
   });
 
   Microsoft.Maps.Events.addHandler(map, "click", function (e) {
+    hidePanel()
     if (isAdding) {
       locations.push(e.location);
       if (!isClicked) {
@@ -82,7 +154,15 @@ function getMap() {
           getSaveForm(polygon.getRings());
         });
         Microsoft.Maps.Events.addHandler(polygon, "mouseover", function (e) {
-          e.target.setOptions(styles.hover);
+          e.target.setOptions(styles.unsave);
+          Microsoft.Maps.loadModule("Microsoft.Maps.SpatialMath", function () {
+            infobox.setOptions({
+              title: "Unsaved trace.",
+              description: "Double click to save this map trace.",
+              location: Microsoft.Maps.SpatialMath.Geometry.centroid(e.target),
+              visible: true,
+            });
+          });
         });
         Microsoft.Maps.Events.addHandler(polygon, "mouseout", function (e) {
           e.target.setOptions(styles.new);
@@ -118,16 +198,14 @@ function getSaveForm(data) {
     .fire({
       icon: "success",
       iconHtml: "<i class='bi-geo-alt-fill'></i>",
-      html: `
-      <form method="post" name="save" class="text-start">
-        <label for="cementery_name" class="form-label">Cementery Name</label>
-        <input id="cementery_name" name="cementery_name" class="form-control my-1"/>
-        <label for="cementery_description" class="form-label">Description</label>
-        <textarea id="cementery_description" name="cementery_description" class="form-control my-1" style="height: 100px; max-height: 100px"></textarea>
-        <label for="cementery_address" class="form-label">Complete Address</label>
-        <input id="cementery_address" name="cementery_address" class="form-control my-1"/>
-      </form>
-    `,
+      html: `<form method="post" name="save" class="text-start">
+              <label for="cementery_name">Cementery Name</label>
+              <input id="cementery_name" name="cementery_name" class="form-control my-1"/>
+              <label for="cementery_description">Description</label>
+              <textarea id="cementery_description" name="cementery_description" class="form-control my-1" style="height: 100px; max-height: 100px"></textarea>
+              <label for="cementery_address">Complete Address</label>
+              <input id="cementery_address" name="cementery_address" class="form-control my-1"/>
+            </form>`,
       width: 400,
       allowOutsideClick: false,
       showConfirmButton: true,
@@ -142,15 +220,13 @@ function getSaveForm(data) {
     .then((response) => {
       if (response.isConfirmed) {
         axios
-          .post("http://localhost/hanap-d-puntud/server/index.php", {
+          .post(`${server}/cementery-add.php`, {
             name: save.cementery_name.value,
             address: save.cementery_address.value,
             description: save.cementery_description.value,
             trace: JSON.stringify(data),
           })
           .then(function (response) {
-            // let result = JSON.parse(response.data);
-            console.log(response.data);
             locations = [];
             isAdding = false;
             isClicked = false;
@@ -158,7 +234,55 @@ function getSaveForm(data) {
             polygon.setRings(locations);
             updateCommandButton();
             showMessage("success", response.data.message);
-            loadCementery(response.data.data, map);
+            loadCementery(map);
+          })
+          .catch(function (error) {
+            console.log(error);
+            showMessage("error", "Failed to save record.");
+          });
+      } else {
+        showMessage("warning", "Action was cancelled.");
+      }
+    });
+}
+
+function getEditForm(data) {
+  swal
+    .fire({
+      icon: "success",
+      iconHtml: "<i class='bi-geo-alt-fill'></i>",
+      html: `<form method="post" name="edit" class="text-start">
+              <input hidden value="${data.id}" name="cementery_id"/>
+              <label for="cementery_name"><i class='bi-info-circle-fill'></i> Cementery Name</label>
+              <input value="${data.name}" id="cementery_name" name="cementery_name" class="form-control my-2"/>
+              <label for="cementery_description"><i class='bi-info-circle-fill'></i> Description</label>
+              <textarea id="cementery_description" name="cementery_description" class="form-control my-2" style="height: 100px; max-height: 100px">${data.description}</textarea>
+              <label for="cementery_address"><i class='bi-geo-alt-fill'></i> Complete Address</label>
+              <input value="${data.address}" id="cementery_address" name="cementery_address" class="form-control my-2"/>
+            </form>`,
+      width: 400,
+      allowOutsideClick: false,
+      showConfirmButton: true,
+      showCancelButton: true,
+      confirmButtonText: "<i class='bi-pencil-square'></i> Save",
+      cancelButtonText: "<i class='bi-x-lg'></i> Cancel",
+      customClass: {
+        cancelButton: "btn btn-danger bg-gradient",
+        confirmButton: "btn btn-success bg-gradient",
+      },
+    })
+    .then((response) => {
+      if (response.isConfirmed) {
+        axios
+          .post(`${server}/cementery-edit.php`, {
+            id: edit.cementery_id.value,
+            name: edit.cementery_name.value,
+            address: edit.cementery_address.value,
+            description: edit.cementery_description.value,
+          })
+          .then(function (response) {
+            showMessage("success", response.data.message);
+            loadCementery(map);
           })
           .catch(function (error) {
             console.log(error);
